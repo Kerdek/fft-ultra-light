@@ -46,7 +46,7 @@
 int main()
 {
 	srand(clock());
-	test(complexf, ctfftdf, "floats via C");
+	test(complexf, ctfftcf, "floats via C");
 	printf("\n");
 	test(complexf, ctfftf, "floats via asm");
 	printf("\n\n");
