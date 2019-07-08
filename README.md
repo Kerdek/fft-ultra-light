@@ -2,7 +2,7 @@
 
 ## Summary
 
-This is an implementation of the radix-2 Cooley Tukey fast Fourier transform that I have been fiddling with. I realized some time ago that there were enough registers available in x86 to completely avoid touching the stack anywhere in the loop. As such, there are two editions of the source and header files: one edition is written in C, and other is in hand-compiled x86 assembly. The assembly edition is available in 32-bit and 64-bit versions.
+This is an implementation of the radix-2 Cooley Tukey fast Fourier transform that I have been fiddling with. I realized some time ago that there were enough registers available in x86 to completely avoid touching the stack anywhere in the loop. The average C compiler is not smart enough to realize this. As such, there are two editions of the source and header files: one edition is written in C, and other is in x86 assembly. The assembly edition is also available for x64, but it does not perform as well as gcc's output for the C edition.
 
 ## Building
 
@@ -20,6 +20,7 @@ If linking the assembly edition, include the header `ctfft.h`, and call `ctfftf`
 
 ## Todo
 
-- Compensate for implementation-defined size of `float` `double` and `long double`.
+- Outsmart GCC on x64
+- Allow for different sizes of `float` `double` and `long double`.
 - Write a decimation-in-frequency version.
 - Further micro-optimize.
