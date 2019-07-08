@@ -2,7 +2,7 @@
 
 ## Summary
 
-This is an implementation of the radix-2 Cooley Tukey fast Fourier transform that I have been fiddling with for some time now. I realized some time ago that there were enough registers available in x86 to completely avoid touching the stack anywhere in the loop. As such, there are two editions of the source and header files: one edition is written in C, and other is in hand-compiled x86 assembly. The assembly edition is available in 32-bit and 64-bit versions.
+This is an implementation of the radix-2 Cooley Tukey fast Fourier transform that I have been fiddling with. I realized some time ago that there were enough registers available in x86 to completely avoid touching the stack anywhere in the loop. As such, there are two editions of the source and header files: one edition is written in C, and other is in hand-compiled x86 assembly. The assembly edition is available in 32-bit and 64-bit versions.
 
 ## Building
 
