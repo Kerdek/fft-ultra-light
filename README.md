@@ -6,7 +6,7 @@ This is an implementation of the radix-2 Cooley Tukey fast Fourier transform tha
 
 ## Building
 
-If compiling the assembly edition, use NASM to create a shared object from the desired version of the assembly portion of the source. Compile and link the C portion of the source using any C compiler and linker.
+If compiling the assembly edition, use NASM to create a shared object from the desired version of the assembly portion of the source. Compile and link the C portion of the source using any C compiler. Link using any desired linker.
 
 ### For example, on Ubuntu 18.04:
 
