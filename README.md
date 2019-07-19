@@ -16,7 +16,7 @@ If compiling the assembly edition, use NASM to create a shared object from the d
 
 ### Benchmarks
 
-- Use the included build scripts `build32` and `build64` to build the comparison benchmarks for each edition, then run `throughput32` and `throughput64` to run them.
+- Use the included build scripts `build32` and `build64` to build the comparison benchmarks for each edition, then use `throughput32` and `throughput64` to run them.
 
 ## Usage
 
