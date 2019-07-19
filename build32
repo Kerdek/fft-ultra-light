@@ -1,0 +1,4 @@
+#! /bin/bash
+
+nasm -f elf32 ctfft32.s
+gcc -m32 -Ofast -O3 -o throughput32 throughput.c ctfft32.o ctfftc.c -lm

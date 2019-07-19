@@ -8,115 +8,110 @@ ctfftf:
 
 	mov	edi		, [esp + 16]
 	mov	esi		, [esp + 20]
+
 	mov	eax		, edi
 	mov	ebx		, edi
-	mov	ecx		, esi
-	sub	ecx		, edi
-	shr	ecx		, 1
-	mov	edx		, edi
-	sub	esi		, ecx
+	mov	ecx		, edi
+	mov	edx		, esi
 
-	shr	ecx		, 3
-	push	ecx
-	shl	ecx		, 3
+	sub	edx		, edi
+	shr	edx		, 4
+	mov	[esp - 4]	, edx
 
-	fldpi
-	fchs
-	fild 	dword [esp]
-	fdivp	ST1		, ST0
-	fldz
-	fldz
-	fld1
+	fldpi					; 				pi
+	fchs					; 				-pi
+	fidiv	dword [esp - 4]			; 				dta
+	fldz					; 			ta	dta
+	fldz					; 		ti	ta	dta
+	fld1					; 	tr	ti	ta	dta
 
-	add	esp		, 4
-
-.begin:
-
-	fld	dword [edx + 4]
-	fld	ST0
-	fld	dword [edx + ecx + 4]
-	fadd	ST1		, ST0
-	fsubp	ST2		, ST0
-	fstp	dword [edx + 4]
-	fld	dword [edx + 0]
-	fld	ST0
-	fld	dword [edx + ecx + 0]
-	fadd	ST1		, ST0
-	fsubp	ST2		, ST0
-	fstp	dword [edx + 0]
-	fld	ST0
-	fmul	ST0		, ST3
-	fld	ST2
-	fmul	ST0		, ST5
-	fsubp	ST1		, ST0
-	fstp	dword [edx + ecx + 0]
-	fmul	ST0		, ST3
-	fld	ST1
-	fmul	ST0		, ST3
-	faddp	ST1		, ST0
-	fstp	dword [edx + ecx + 4]
-	fstp	ST0
-
-	cmp	edx		, eax
-	je	.rewind
-
-	lea	edx		, [edx + ecx * 2]
-
-	jmp	.begin
-
-.rewind:
-
-	add	eax		, 8
-
-	cmp	eax		, esi
-	je	.twiddle
-
-	add	ebx		, 8
-	mov	edx		, ebx
-
-	fstp	ST0
-	fstp	ST0
-	fadd	ST0		, ST1
-	fld	ST0
-	fsin
-	fld	ST1
-	fcos
+	shl	edx		, 3
+	sub	esi		, edx
+	sub	esi		, 8
 
 	jmp	.begin
 
 .twiddle:
 
-	cmp	ecx		, 8
-	je	.end
-	
-	mov	ebx		, edi
-	mov	edx		, ebx
-	shr	ecx		, 1
-	add	esi		, ecx
+	fld ST0					; 			dta	dta
+	faddp					; 				dta'
+	fldz					;			0	dta
+	fldz					;		0	0	dta
+	fld1					;	1	0	0	dta
 
-	fstp	ST0
-	fstp	ST0
-	fstp	ST0
-	fld1
-	fld1
-	faddp	ST1		, ST0
-	fmulp	ST1		, ST0
-	fldz
-	fldz
-	fld1
+	add	eax		, 8
+	mov	ebx		, edi
+	mov	ecx		, edi
+	shr	edx		, 1
+	add	esi		, edx
 
 	jmp	.begin
 
-.end:
+.rewind:
 
-	fstp	ST0
-	fstp	ST0
-	fstp	ST0
-	fstp	ST0
+	fadd	ST0		, ST1		; 			ta'	dta
+	fld	ST0				; 		ta	ta	dta
+	fsincos					; 	tr	ti	ta	dta
+
+	add	eax		, 8
+	add	ebx		, 8
+	mov	ecx		, ebx
+
+	jmp	.begin
+
+.next:
+	
+	lea	ecx		, [ecx + edx * 2]
+
+.begin:
+
+	fld	dword [ecx]			;				ar
+	fld	ST0				;			ar	ar
+	fld	dword [ecx + edx]		;		br	ar	ar
+	fsub	ST2		, ST0		;		br	ar	bbr
+	faddp					;			aar	bbr
+	fstp	dword [ecx]			;				bbr
+
+	fld	dword [ecx + 4]			;			ai	bbr
+	fld	ST0				;		ai	ai	bbr
+	fld	dword [ecx + edx + 4]		;	bi	ai	ai	bbr
+	fsub	ST2		, ST0		;	bi	ai	bbi	bbr
+	faddp					;		aai	bbi	bbr
+	fstp	dword [ecx + 4]			;			bbi	bbr
+
+	fld	ST1				;		bbr	bbi	bbr
+	fmul	ST0		, ST4		;		tibbr	bbi	bbr
+	fld	ST1				;	bbi	tibbr	bbi	bbr
+	fmul	ST0		, ST4		;	trbbi	tibbr	bbi	bbr
+	faddp					;		bbbi	bbi	bbr
+	fstp	dword [ecx + edx + 4]		;			bbi	bbr
+
+	fmul	ST0		, ST3		;			tibbi	bbr
+	fxch					;			bbr	tibbi
+	fmul	ST0		, ST2		;			trbbr	tibbi
+	fsubrp					;				bbbr
+	fstp	dword [ecx + edx]		;
+
+	cmp	ecx		, eax
+	jne	.next
+
+	fstp	ST0				; 		ti	ta	dta
+	fstp	ST0				; 			ta	dta
+
+	cmp	eax		, esi
+	jne	.rewind
+
+	fstp	ST0				; 				dta
+
+	cmp	edx		, 8
+	jne	.twiddle
+
+	fstp	ST0				; 				
 
 	pop	esi
 	pop	edi
 	pop	ebx
+
 	ret
 
 global ctfftd
@@ -128,115 +123,110 @@ ctfftd:
 
 	mov	edi		, [esp + 16]
 	mov	esi		, [esp + 20]
+
 	mov	eax		, edi
 	mov	ebx		, edi
-	mov	ecx		, esi
-	sub	ecx		, edi
-	shr	ecx		, 1
-	mov	edx		, edi
-	sub	esi		, ecx
+	mov	ecx		, edi
+	mov	edx		, esi
 
-	shr	ecx		, 4
-	push	ecx
-	shl	ecx		, 4
+	sub	edx		, edi
+	shr	edx		, 5
+	mov	[esp - 4]	, edx
 
-	fldpi
-	fchs
-	fild 	dword [esp]
-	fdivp	ST1		, ST0
-	fldz
-	fldz
-	fld1
+	fldpi					; 				pi
+	fchs					; 				-pi
+	fidiv	dword [esp - 4]			; 				dta
+	fldz					; 			ta	dta
+	fldz					; 		ti	ta	dta
+	fld1					; 	tr	ti	ta	dta
 
-	add	esp		, 4
-
-.begin:
-
-	fld	qword [edx + 8]
-	fld	ST0
-	fld	qword [edx + ecx + 8]
-	fadd	ST1		, ST0
-	fsubp	ST2		, ST0
-	fstp	qword [edx + 8]
-	fld	qword [edx]
-	fld	ST0
-	fld	qword [edx + ecx]
-	fadd	ST1		, ST0
-	fsubp	ST2		, ST0
-	fstp	qword [edx]
-	fld	ST0
-	fmul	ST0		, ST3
-	fld	ST2
-	fmul	ST0		, ST5
-	fsubp	ST1		, ST0
-	fstp	qword [edx + ecx]
-	fmul	ST0		, ST3
-	fld	ST1
-	fmul	ST0		, ST3
-	faddp	ST1		, ST0
-	fstp	qword [edx + ecx + 8]
-	fstp	ST0
-
-	cmp	edx		, eax
-	je	.rewind
-
-	lea	edx		, [edx + ecx * 2]
-
-	jmp	.begin
-
-.rewind:
-
-	add	eax		, 16
-
-	cmp	eax		, esi
-	je	.twiddle
-
-	add	ebx		, 16
-	mov	edx		, ebx
-
-	fstp	ST0
-	fstp	ST0
-	fadd	ST0		, ST1
-	fld	ST0
-	fsin
-	fld	ST1
-	fcos
+	shl	edx		, 4
+	sub	esi		, edx
+	sub	esi		, 16
 
 	jmp	.begin
 
 .twiddle:
 
-	cmp	ecx		, 16
-	je	.end
-	
-	mov	ebx		, edi
-	mov	edx		, ebx
-	shr	ecx		, 1
-	add	esi		, ecx
+	fld ST0					; 			dta	dta
+	faddp					; 				dta'
+	fldz					;			0	dta
+	fldz					;		0	0	dta
+	fld1					;	1	0	0	dta
 
-	fstp	ST0
-	fstp	ST0
-	fstp	ST0
-	fld1
-	fld1
-	faddp	ST1		, ST0
-	fmulp	ST1		, ST0
-	fldz
-	fldz
-	fld1
+	add	eax		, 16
+	mov	ebx		, edi
+	mov	ecx		, edi
+	shr	edx		, 1
+	add	esi		, edx
 
 	jmp	.begin
 
-.end:
+.rewind:
 
-	fstp	ST0
-	fstp	ST0
-	fstp	ST0
-	fstp	ST0
+	fadd	ST0		, ST1		; 			ta'	dta
+	fld	ST0				; 		ta	ta	dta
+	fsincos					; 	tr	ti	ta	dta
+
+	add	eax		, 16
+	add	ebx		, 16
+	mov	ecx		, ebx
+
+	jmp	.begin
+
+.next:
+	
+	lea	ecx		, [ecx + edx * 2]
+
+.begin:
+
+	fld	qword [ecx]			;				ar
+	fld	ST0				;			ar	ar
+	fld	qword [ecx + edx]		;		br	ar	ar
+	fsub	ST2		, ST0		;		br	ar	bbr
+	faddp					;			aar	bbr
+	fstp	qword [ecx]			;				bbr
+
+	fld	qword [ecx + 8]			;			ai	bbr
+	fld	ST0				;		ai	ai	bbr
+	fld	qword [ecx + edx + 8]		;	bi	ai	ai	bbr
+	fsub	ST2		, ST0		;	bi	ai	bbi	bbr
+	faddp					;		aai	bbi	bbr
+	fstp	qword [ecx + 8]			;			bbi	bbr
+
+	fld	ST1				;		bbr	bbi	bbr
+	fmul	ST0		, ST4		;		tibbr	bbi	bbr
+	fld	ST1				;	bbi	tibbr	bbi	bbr
+	fmul	ST0		, ST4		;	trbbi	tibbr	bbi	bbr
+	faddp					;		bbbi	bbi	bbr
+	fstp	qword [ecx + edx + 8]		;			bbi	bbr
+
+	fmul	ST0		, ST3		;			tibbi	bbr
+	fxch					;			bbr	tibbi
+	fmul	ST0		, ST2		;			trbbr	tibbi
+	fsubrp					;				bbbr
+	fstp	qword [ecx + edx]		;
+
+	cmp	ecx		, eax
+	jne	.next
+
+	fstp	ST0				; 		ti	ta	dta
+	fstp	ST0				; 			ta	dta
+
+	cmp	eax		, esi
+	jne	.rewind
+
+	fstp	ST0				; 				dta
+
+	cmp	edx		, 16
+	jne	.twiddle
+
+	fstp	ST0				; 				
 
 	pop	esi
 	pop	edi
 	pop	ebx
+
 	ret
 
 global ctfftl
@@ -248,113 +238,108 @@ ctfftl:
 
 	mov	edi		, [esp + 16]
 	mov	esi		, [esp + 20]
+
 	mov	eax		, edi
 	mov	ebx		, edi
-	mov	ecx		, esi
-	sub	ecx		, edi
-	shr	ecx		, 1
-	mov	edx		, edi
-	sub	esi		, ecx
+	mov	ecx		, edi
+	mov	edx		, esi
 
-	shr	ecx		, 5
-	push	ecx
-	shl	ecx		, 5
+	sub	edx		, edi
+	shr	edx		, 6
+	mov	[esp - 4]	, edx
 
-	fldpi
-	fchs
-	fild 	dword [esp]
-	fdivp	ST1		, ST0
-	fldz
-	fldz
-	fld1
+	fldpi					; 				pi
+	fchs					; 				-pi
+	fidiv	dword [esp - 4]			; 				dta
+	fldz					; 			ta	dta
+	fldz					; 		ti	ta	dta
+	fld1					; 	tr	ti	ta	dta
 
-	add	esp		, 4
-
-.begin:
-
-	fld	tword [edx + 16]
-	fld	ST0
-	fld	tword [edx + ecx + 16]
-	fadd	ST1		, ST0
-	fsubp	ST2		, ST0
-	fstp	tword [edx + 16]
-	fld	tword [edx]
-	fld	ST0
-	fld	tword [edx + ecx]
-	fadd	ST1		, ST0
-	fsubp	ST2		, ST0
-	fstp	tword [edx]
-	fld	ST0
-	fmul	ST0		, ST3
-	fld	ST2
-	fmul	ST0		, ST5
-	fsubp	ST1		, ST0
-	fstp	tword [edx + ecx]
-	fmul	ST0		, ST3
-	fld	ST1
-	fmul	ST0		, ST3
-	faddp	ST1		, ST0
-	fstp	tword [edx + ecx + 16]
-	fstp	ST0
-
-	cmp	edx		, eax
-	je	.rewind
-
-	lea	edx		, [edx + ecx * 2]
-
-	jmp	.begin
-
-.rewind:
-
-	add	eax		, 32
-
-	cmp	eax		, esi
-	je	.twiddle
-
-	add	ebx		, 32
-	mov	edx		, ebx
-
-	fstp	ST0
-	fstp	ST0
-	fadd	ST0		, ST1
-	fld	ST0
-	fsin
-	fld	ST1
-	fcos
+	shl	edx		, 5
+	sub	esi		, edx
+	sub	esi		, 32
 
 	jmp	.begin
 
 .twiddle:
 
-	cmp	ecx		, 32
-	je	.end
-	
-	mov	ebx		, edi
-	mov	edx		, ebx
-	shr	ecx		, 1
-	add	esi		, ecx
+	fld ST0					; 			dta	dta
+	faddp					; 				dta'
+	fldz					;			0	dta
+	fldz					;		0	0	dta
+	fld1					;	1	0	0	dta
 
-	fstp	ST0
-	fstp	ST0
-	fstp	ST0
-	fld1
-	fld1
-	faddp	ST1		, ST0
-	fmulp	ST1		, ST0
-	fldz
-	fldz
-	fld1
+	add	eax		, 32
+	mov	ebx		, edi
+	mov	ecx		, edi
+	shr	edx		, 1
+	add	esi		, edx
 
 	jmp	.begin
 
-.end:
+.rewind:
 
-	fstp	ST0
-	fstp	ST0
-	fstp	ST0
-	fstp	ST0
+	fadd	ST0		, ST1		; 			ta'	dta
+	fld	ST0				; 		ta	ta	dta
+	fsincos					; 	tr	ti	ta	dta
+
+	add	eax		, 32
+	add	ebx		, 32
+	mov	ecx		, ebx
+
+	jmp	.begin
+
+.next:
+	
+	lea	ecx		, [ecx + edx * 2]
+
+.begin:
+
+	fld	tword [ecx]			;				ar
+	fld	ST0				;			ar	ar
+	fld	tword [ecx + edx]		;		br	ar	ar
+	fsub	ST2		, ST0		;		br	ar	bbr
+	faddp					;			aar	bbr
+	fstp	tword [ecx]			;				bbr
+
+	fld	tword [ecx + 16]		;			ai	bbr
+	fld	ST0				;		ai	ai	bbr
+	fld	tword [ecx + edx + 16]		;	bi	ai	ai	bbr
+	fsub	ST2		, ST0		;	bi	ai	bbi	bbr
+	faddp					;		aai	bbi	bbr
+	fstp	tword [ecx + 16]		;			bbi	bbr
+
+	fld	ST1				;		bbr	bbi	bbr
+	fmul	ST0		, ST4		;		tibbr	bbi	bbr
+	fld	ST1				;	bbi	tibbr	bbi	bbr
+	fmul	ST0		, ST4		;	trbbi	tibbr	bbi	bbr
+	faddp					;		bbbi	bbi	bbr
+	fstp	tword [ecx + edx + 16]		;			bbi	bbr
+
+	fmul	ST0		, ST3		;			tibbi	bbr
+	fxch					;			bbr	tibbi
+	fmul	ST0		, ST2		;			trbbr	tibbi
+	fsubrp					;				bbbr
+	fstp	tword [ecx + edx]		;
+
+	cmp	ecx		, eax
+	jne	.next
+
+	fstp	ST0				; 		ti	ta	dta
+	fstp	ST0				; 			ta	dta
+
+	cmp	eax		, esi
+	jne	.rewind
+
+	fstp	ST0				; 				dta
+
+	cmp	edx		, 32
+	jne	.twiddle
+
+	fstp	ST0				; 				
 
 	pop	esi
 	pop	edi
 	pop	ebx
+
 	ret

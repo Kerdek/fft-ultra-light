@@ -2,6 +2,11 @@ section .text
 global ctfftf
 
 ctfftf:
+	push	rbx
+
+	fldpi
+	fchs
+
 	mov	rax		, rdi
 	mov	rbx		, rdi
 	mov	rcx		, rsi
@@ -14,8 +19,6 @@ ctfftf:
 	push	rcx
 	shl	rcx		, 3
 
-	fldpi
-	fchs
 	fild 	qword [rsp]
 	fdivp	ST1		, ST0
 	fldz
@@ -25,6 +28,8 @@ ctfftf:
 	add	rsp		, 8
 
 .begin:
+
+	cmp	rdx		, rbx
 
 	fld	dword [rdx + 4]
 	fld	ST0
@@ -51,7 +56,6 @@ ctfftf:
 	fstp	dword [rdx + rcx + 4]
 	fstp	ST0
 
-	cmp	rdx		, rbx
 	je	.rewind
 
 	lea	rdx		, [rdx + rcx * 2]
@@ -61,15 +65,16 @@ ctfftf:
 .rewind:
 
 	add	rbx		, 8
-
 	cmp	rbx		, rsi
+
+	fstp	ST0
+	fstp	ST0
+
 	je	.twiddle
 
 	add	rax		, 8
 	mov	rdx		, rax
 
-	fstp	ST0
-	fstp	ST0
 	fadd	ST0		, ST1
 	fld	ST0
 	fsin
@@ -81,6 +86,9 @@ ctfftf:
 .twiddle:
 
 	cmp	rcx		, 8
+
+	fstp	ST0
+
 	je	.end
 	
 	mov	rax		, rdi
@@ -88,9 +96,6 @@ ctfftf:
 	shr	rcx		, 1
 	add	rsi		, rcx
 
-	fstp	ST0
-	fstp	ST0
-	fstp	ST0
 	fld1
 	fld1
 	faddp	ST1		, ST0
@@ -106,13 +111,18 @@ ctfftf:
 	fstp	ST0
 	fstp	ST0
 	fstp	ST0
-	fstp	ST0
+
+	pop	rbx
 
 	ret
 
 global ctfftd
 
 ctfftd:
+	push	rbx
+
+	fldpi
+	fchs
 	mov	rax		, rdi
 	mov	rbx		, rdi
 	mov	rcx		, rsi
@@ -123,10 +133,7 @@ ctfftd:
 
 	shr	rcx		, 4
 	push	rcx
-	shl	rcx		, 4
 
-	fldpi
-	fchs
 	fild 	qword [rsp]
 	fdivp	ST1		, ST0
 	fldz
@@ -134,8 +141,11 @@ ctfftd:
 	fld1
 
 	add	rsp		, 8
+	shl	rcx		, 4
 
 .begin:
+
+	cmp	rdx		, rbx
 
 	fld	qword [rdx + 8]
 	fld	ST0
@@ -162,7 +172,6 @@ ctfftd:
 	fstp	qword [rdx + rcx + 8]
 	fstp	ST0
 
-	cmp	rdx		, rbx
 	je	.rewind
 
 	lea	rdx		, [rdx + rcx * 2]
@@ -172,15 +181,16 @@ ctfftd:
 .rewind:
 
 	add	rbx		, 16
-
 	cmp	rbx		, rsi
+
+	fstp	ST0
+	fstp	ST0
+
 	je	.twiddle
 
 	add	rax		, 16
 	mov	rdx		, rax
 
-	fstp	ST0
-	fstp	ST0
 	fadd	ST0		, ST1
 	fld	ST0
 	fsin
@@ -192,6 +202,9 @@ ctfftd:
 .twiddle:
 
 	cmp	rcx		, 16
+
+	fstp	ST0
+
 	je	.end
 	
 	mov	rax		, rdi
@@ -199,9 +212,6 @@ ctfftd:
 	shr	rcx		, 1
 	add	rsi		, rcx
 
-	fstp	ST0
-	fstp	ST0
-	fstp	ST0
 	fld1
 	fld1
 	faddp	ST1		, ST0
@@ -217,13 +227,19 @@ ctfftd:
 	fstp	ST0
 	fstp	ST0
 	fstp	ST0
-	fstp	ST0
+
+	pop	rbx
 
 	ret
 
 global ctfftl
 
 ctfftl:
+
+	push rbx
+
+	fldpi
+	fchs
 
 	mov	rax		, rdi
 	mov	rbx		, rdi
@@ -237,8 +253,6 @@ ctfftl:
 	push	rcx
 	shl	rcx		, 5
 
-	fldpi
-	fchs
 	fild 	qword [rsp]
 	fdivp	ST1		, ST0
 	fldz
@@ -248,6 +262,8 @@ ctfftl:
 	add	rsp		, 8
 
 .begin:
+
+	cmp	rdx		, rbx
 
 	fld	tword [rdx + 16]
 	fld	ST0
@@ -274,7 +290,6 @@ ctfftl:
 	fstp	tword [rdx + rcx + 16]
 	fstp	ST0
 
-	cmp	rdx		, rbx
 	je	.rewind
 
 	lea	rdx		, [rdx + rcx * 2]
@@ -284,15 +299,16 @@ ctfftl:
 .rewind:
 
 	add	rbx		, 32
-
 	cmp	rbx		, rsi
+
+	fstp	ST0
+	fstp	ST0
+
 	je	.twiddle
 
 	add	rax		, 32
 	mov	rdx		, rax
 
-	fstp	ST0
-	fstp	ST0
 	fadd	ST0		, ST1
 	fld	ST0
 	fsin
@@ -304,6 +320,9 @@ ctfftl:
 .twiddle:
 
 	cmp	rcx		, 32
+
+	fstp	ST0
+
 	je	.end
 	
 	mov	rax		, rdi
@@ -311,9 +330,6 @@ ctfftl:
 	shr	rcx		, 1
 	add	rsi		, rcx
 
-	fstp	ST0
-	fstp	ST0
-	fstp	ST0
 	fld1
 	fld1
 	faddp	ST1		, ST0
@@ -329,6 +345,7 @@ ctfftl:
 	fstp	ST0
 	fstp	ST0
 	fstp	ST0
-	fstp	ST0
+
+	pop	rbx
 
 	ret

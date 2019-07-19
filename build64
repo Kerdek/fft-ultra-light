@@ -1,0 +1,4 @@
+#! /bin/bash
+
+nasm -f elf64 ctfft64.s
+gcc -m64 -Ofast -O3 -o throughput64 throughput.c ctfft64.o ctfftc.c -lm

@@ -2,6 +2,7 @@
 
 #include <math.h>
 #include <stddef.h>
+#include <stdio.h>
 
 void ctfftcf(complexf * edi, complexf * esi)
 {
