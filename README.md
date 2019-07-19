@@ -14,6 +14,10 @@ If compiling the assembly edition, use NASM to create a shared object from the d
 
 - To create a 32-bit executable which imports the the C edition, use `gcc -m32 -o <my_executable> <my_sources> ctfftc.c -lm` to output the executable `<my_executable>`.
 
+### Benchmarks
+
+- Use the included build scripts `build32` and `build64` to build the comparison benchmarks for each edition, then run `throughput32` and `throughput64` to run them.
+
 ## Usage
 
 If linking the assembly edition, include the header `ctfft.h`, and call `ctfftf`, `ctfftd`, or `ctfftl`. If linking the C edition, include the header `ctfftc.h`, and call `ctfftcf`, `ctfftcd`, or `ctfftcl`.  Contracts for each function are described in each header file. It is possible to include both.
