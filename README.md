@@ -22,5 +22,5 @@ If linking the assembly edition, include the header `ctfft.h`, and call `ctfftf`
 
 - Outsmart GCC on x64
 - Allow for different sizes of `float` `double` and `long double`.
-- Write a decimation-in-frequency version.
+- Write a decimation-in-time version.
 - Further micro-optimize.
